@@ -58,108 +58,62 @@ function checkRow(a, b, c, move) {
 }
 
 function computerMove() {
-    let bestScore = -Infinity;
-    let move;
+    // find the best move for the computer, then make that move
+    // make sure to try to win first, then try to block the player from winning if they have two in a row
+    // if neither of those are true, then pick a random square
+    let bestMove = null;
     for (let i = 0; i < squares.length; i++) {
         if (squares[i].textContent === '') {
-            squares[i].textContent = 'O';
-            let score = minimax(squares, 0, false);
-            squares[i].textContent = '';
-            if (score > bestScore) {
-                bestScore = score;
-                move = i;
-            }
-        }
-    }
-    nextMove(squares[move]);
-}
-
-function minimax(squares, depth, isMaximizing) {
-    let result = checkForWinner('O');
-    if (result !== null) {
-        return result === 'O' ? 10 - depth : depth - 10;
-    } else if (isBoardFull(squares)) {
-        return 0;
-    }
-
-    if (isMaximizing) {
-        let bestScore = -Infinity;
-        for (let i = 0; i < squares.length; i++) {
-            if (squares[i].textContent === '') {
-                squares[i].textContent = 'O';
-                let score = minimax(squares, depth + 1, false);
+            squares[i].textContent = turn;
+            if (checkForWinner(turn)) {
                 squares[i].textContent = '';
-                bestScore = Math.max(score, bestScore);
+                bestMove = i;
+                break;
+            } else {
+                squares[i].textContent = '';
             }
         }
-        return bestScore;
-    } else {
-        let bestScore = Infinity;
-        let playerMove = null;
+    }
+    if (bestMove === null) {
         for (let i = 0; i < squares.length; i++) {
             if (squares[i].textContent === '') {
                 squares[i].textContent = 'X';
                 if (checkForWinner('X')) {
                     squares[i].textContent = '';
-                    return -10 + depth;
+                    bestMove = i;
+                    break;
+                } else {
+                    squares[i].textContent = '';
                 }
-                let score = minimax(squares, depth + 1, true);
+            }
+        }
+    }
+    if (bestMove === null) {
+        for (let i = 0; i < squares.length; i++) {
+            if (squares[i].textContent === '') {
+                squares[i].textContent = 'O';
+                if (checkForWinner('O')) {
+                    squares[i].textContent = '';
+                    bestMove = i;
+                    break;
+                } else {
+                    squares[i].textContent = '';
+                }
+            }
+        }
+    }
+    if (bestMove === null) {
+        for (let i = 0; i < squares.length; i++) {
+            if (squares[i].textContent === '') {
+                squares[i].textContent = 'X';
                 squares[i].textContent = '';
-                if (score < bestScore) {
-                    bestScore = score;
-                    playerMove = i;
-                }
-            }
-        }
-        if (playerMove !== null && bestScore >= 0) {
-            squares[playerMove].textContent = 'O';
-            return bestScore;
-        } else {
-            let blockingMove = null;
-            for (let i = 0; i < squares.length; i++) {
-                if (squares[i].textContent === '') {
-                    squares[i].textContent = 'X';
-                    if (checkForWinner('X')) {
-                        squares[i].textContent = '';
-                        squares[i].textContent = 'O';
-                        return 0;
-                    }
-                    squares[i].textContent = '';
-                }
-            }
-            for (let i = 0; i < squares.length; i++) {
-                if (squares[i].textContent === '') {
-                    squares[i].textContent = 'X';
-                    let score = minimax(squares, depth + 1, true);
-                    squares[i].textContent = '';
-                    if (score < bestScore) {
-                        bestScore = score;
-                        blockingMove = i;
-                    }
-                }
-            }
-            if (blockingMove !== null) {
-                squares[blockingMove].textContent = 'O';
-                return bestScore;
-            } else {
-                let move;
-                do {
-                    move = Math.floor(Math.random() * squares.length);
-                } while (squares[move].textContent !== '');
-                squares[move].textContent = 'O';
-                return bestScore;
+                bestMove = i;
+                break;
             }
         }
     }
-}
-
-function isBoardFull(squares) {
-    for (let i = 0; i < squares.length; i++) {
-        if (squares[i].textContent === '') {
-            return false;
-        }
-    }
-    return true;
+    squares[bestMove].textContent = turn;
+    switchTurn();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
